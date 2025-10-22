@@ -3,7 +3,7 @@ import { NavigationButtons } from '@/components/NavigationButtons';
 export default function Presentation2() {
   return (
     <main className="min-h-screen flex items-center justify-center">
-      <NavigationButtons nextHref="/presentation/3" backHref="/presentation/1" />
+      <NavigationButtons nextHref="/presentation/extra" backHref="/presentation/1" />
 
       <div className="text-center max-w-2xl mx-auto px-4">
         <h1 className="text-5xl font-bold mb-8">
