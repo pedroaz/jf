@@ -61,12 +61,13 @@ Respond with ONLY the name of the winner (exactly as it appears above, nothing e
     );
 
     if (!winner) {
-      // Fallback: pick random if name doesn't match
-      const randomIndex = Math.floor(Math.random() * inputs.length);
-      store.setWinner(inputs[randomIndex]);
-    } else {
-      store.setWinner(winner);
+      return NextResponse.json(
+        { error: `AI returned invalid winner name: "${winnerName}"` },
+        { status: 500 }
+      );
     }
+
+    store.setWinner(winner);
 
     return NextResponse.json({ success: true, winner: store.getWinner() });
   } catch (error) {

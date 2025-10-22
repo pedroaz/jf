@@ -3,50 +3,47 @@
 import { NavigationButtons } from '@/components/NavigationButtons';
 import { useAppState } from '@/hooks/useAppState';
 import { useState, useEffect } from 'react';
+import Confetti from 'react-confetti';
+import { useWindowSize } from '@/hooks/useWindowSize';
 
 export default function Presentation6() {
   const { userInputs, winner } = useAppState();
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isThinking, setIsThinking] = useState(false);
   const [showWinner, setShowWinner] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { width, height } = useWindowSize();
 
   const selectWinner = async () => {
     if (userInputs.length === 0) return;
 
-    setIsAnimating(true);
+    setIsThinking(true);
     setShowWinner(false);
+    setError(null);
 
-    // Cycle through entries
-    let cycles = 0;
-    const maxCycles = 20;
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % userInputs.length);
-      cycles++;
+    // Make API call to select winner
+    try {
+      const response = await fetch('/api/winner', { method: 'POST' });
 
-      if (cycles >= maxCycles) {
-        clearInterval(interval);
-        // Make API call to select winner
-        fetch('/api/winner', { method: 'POST' })
-          .then(() => {
-            setTimeout(() => {
-              setIsAnimating(false);
-              setShowWinner(true);
-            }, 500);
-          })
-          .catch((error) => {
-            console.error('Failed to select winner:', error);
-            setIsAnimating(false);
-          });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to select winner');
       }
-    }, 100);
-  };
 
-  const displayedInput = isAnimating
-    ? userInputs[currentIndex]
-    : winner;
+      // Wait a bit before showing winner for dramatic effect
+      setTimeout(() => {
+        setIsThinking(false);
+        setShowWinner(true);
+      }, 1000);
+    } catch (error: any) {
+      console.error('Failed to select winner:', error);
+      setIsThinking(false);
+      setError(error.message || 'AI failed to select winner');
+    }
+  };
 
   return (
     <main className="min-h-screen flex items-center justify-center p-8">
+      {showWinner && winner && <Confetti width={width} height={height} recycle={true} />}
       <NavigationButtons backHref="/presentation/5" />
 
       <div className="text-center max-w-3xl mx-auto">
@@ -54,7 +51,31 @@ export default function Presentation6() {
           {showWinner ? '🎉 Winner! 🎉' : 'Now who gets the chocolate?'}
         </h1>
 
-        {!isAnimating && !showWinner && (
+        {isThinking && (
+          <div className="mb-8 p-12">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-bb-pink mb-6"></div>
+            <p className="text-3xl font-bold text-bb-blue animate-pulse">
+              AI is thinking...
+            </p>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-8 p-6 bg-red-100 border-2 border-red-500 rounded-lg">
+            <p className="text-2xl font-bold text-red-700 mb-2">
+              ❌ AI Selection Failed
+            </p>
+            <p className="text-lg text-red-600">{error}</p>
+            <button
+              onClick={() => setError(null)}
+              className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {!isThinking && !showWinner && !error && (
           <button
             onClick={selectWinner}
             disabled={userInputs.length === 0}
@@ -64,19 +85,14 @@ export default function Presentation6() {
           </button>
         )}
 
-        {(isAnimating || showWinner) && displayedInput && (
-          <div
-            className={`p-12 rounded-2xl border-4 transition-all duration-300 ${showWinner
-                ? 'bg-bb-yellow/20 border-bb-yellow scale-110 shadow-2xl'
-                : 'bg-gray-100 border-gray-300'
-              }`}
-          >
-            <h2 className="text-4xl font-bold mb-6">{displayedInput.name}</h2>
-            <p className="text-2xl text-gray-700">{displayedInput.idea}</p>
+        {!error && showWinner && winner && (
+          <div className="p-12 rounded-2xl border-4 bg-bb-yellow/20 border-bb-yellow scale-110 shadow-2xl transition-all duration-300">
+            <h2 className="text-4xl font-bold mb-6">{winner.name}</h2>
+            <p className="text-2xl text-gray-700">{winner.idea}</p>
           </div>
         )}
 
-        {userInputs.length === 0 && (
+        {userInputs.length === 0 && !error && !isThinking && (
           <p className="text-gray-400 text-xl">
             No submissions yet. Cannot select a winner.
           </p>

@@ -31,9 +31,12 @@ export default function InputPage() {
 
       if (response.ok) {
         setSubmitted(true);
+        // Reset form after 3 seconds to allow another submission
         setTimeout(() => {
-          router.push('/');
-        }, 2000);
+          setSubmitted(false);
+          setName('');
+          setIdea('');
+        }, 3000);
       } else {
         alert('Failed to submit. Please try again.');
       }

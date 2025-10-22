@@ -54,6 +54,11 @@ class Store {
     return this.state.winner;
   }
 
+  clearUserInputs(): void {
+    this.state.userInputs = [];
+    this.state.winner = null;
+  }
+
   reset(): void {
     this.state = {
       visibleCards: [],

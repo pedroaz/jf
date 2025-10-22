@@ -7,6 +7,7 @@ import Link from 'next/link';
 export default function AdminPage() {
   const [cards, setCards] = useState<ProjectCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
     fetchCards();
@@ -45,6 +46,25 @@ export default function AdminPage() {
     }
   };
 
+  const clearAllIdeas = async () => {
+    if (!confirm('Are you sure you want to clear all user ideas and the winner? This cannot be undone.')) {
+      return;
+    }
+
+    setClearing(true);
+    try {
+      await fetch('/api/admin/clear-inputs', {
+        method: 'POST',
+      });
+      alert('All ideas cleared successfully!');
+    } catch (error) {
+      console.error('Failed to clear ideas:', error);
+      alert('Failed to clear ideas. Please try again.');
+    } finally {
+      setClearing(false);
+    }
+  };
+
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center">
@@ -58,31 +78,19 @@ export default function AdminPage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold">Admin Panel</h1>
-          <Link
-            href="/presentation/3"
-            className="px-4 py-2 bg-bb-blue text-white rounded-lg hover:opacity-80 transition-opacity"
-          >
-            View Presentation
-          </Link>
-        </div>
-
-        <div className="bg-gray-50 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">Quick Links</h2>
-          <div className="flex flex-wrap gap-2">
-            {[1, 2, 3, 4, 5, 6].map((num) => (
-              <Link
-                key={num}
-                href={`/presentation/${num}`}
-                className="px-3 py-1 bg-white border-2 border-gray-300 rounded hover:border-bb-yellow transition-colors"
-              >
-                Slide {num}
-              </Link>
-            ))}
-            <Link
-              href="/input"
-              className="px-3 py-1 bg-white border-2 border-gray-300 rounded hover:border-bb-pink transition-colors"
+          <div className="flex gap-3">
+            <button
+              onClick={clearAllIdeas}
+              disabled={clearing}
+              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Input Form
+              {clearing ? 'Clearing...' : 'Clear All Ideas'}
+            </button>
+            <Link
+              href="/presentation/3"
+              className="px-4 py-2 bg-bb-blue text-white rounded-lg hover:opacity-80 transition-opacity"
+            >
+              View Presentation
             </Link>
           </div>
         </div>
