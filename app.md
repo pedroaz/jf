@@ -51,17 +51,19 @@ Top button top right
 A big QR code leading people to the /input page
 Button top right to next
 
-## Route presentation/6
+## Route presentation/5
 Page displaying the inputs from people in cards (with their name on top)
 Button top right to next
 
-## Route presentation/7
+## Route presentation/6
 Animation that will pick one of the inputs from people and display the winner.
 A LLM call with the whole context / inputs will be make to define the winner.
 
 ## Route admin/
 Screen where I will be able to keep making the cards appear. So here I have all the cards and when I click on them they get added to the state
 
+## Route input/
+Name, idea for the project
 
 # State management
 Every half of second, a call is make to the next backend getting the state.
