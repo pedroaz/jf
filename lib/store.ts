@@ -7,6 +7,7 @@ class Store {
     visibleCards: [],
     userInputs: [],
     winner: null,
+    winnerReason: null,
   };
 
   private cards: ProjectCard[] = [...projectCards];
@@ -46,17 +47,25 @@ class Store {
     return [...this.state.userInputs];
   }
 
-  setWinner(winner: UserInput): void {
+  setWinner(winner: UserInput, reason: string): void {
+    console.log('Store.setWinner called with:', { winner, reason });
     this.state.winner = winner;
+    this.state.winnerReason = reason;
+    console.log('Store state after setWinner:', this.state);
   }
 
   getWinner(): UserInput | null {
     return this.state.winner;
   }
 
+  getWinnerReason(): string | null {
+    return this.state.winnerReason;
+  }
+
   clearUserInputs(): void {
     this.state.userInputs = [];
     this.state.winner = null;
+    this.state.winnerReason = null;
   }
 
   reset(): void {
@@ -64,10 +73,23 @@ class Store {
       visibleCards: [],
       userInputs: [],
       winner: null,
+      winnerReason: null,
     };
     this.cards = [...projectCards];
   }
 }
 
-// Singleton instance
-export const store = new Store();
+// Global singleton instance that persists across hot reloads
+const globalForStore = globalThis as unknown as {
+  store: Store | undefined;
+};
+
+export const store = globalForStore.store ?? new Store();
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForStore.store = store;
+}
+
+// Log store instance ID for debugging
+const storeId = Math.random().toString(36).substr(2, 9);
+console.log('Store instance created/accessed:', storeId);

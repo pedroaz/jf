@@ -16,4 +16,5 @@ export interface AppState {
   visibleCards: string[]; // IDs of visible project cards
   userInputs: UserInput[];
   winner: UserInput | null;
+  winnerReason: string | null;
 }

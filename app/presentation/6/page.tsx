@@ -7,11 +7,20 @@ import Confetti from 'react-confetti';
 import { useWindowSize } from '@/hooks/useWindowSize';
 
 export default function Presentation6() {
-  const { userInputs, winner } = useAppState();
+  const { userInputs } = useAppState();
   const [isThinking, setIsThinking] = useState(false);
   const [showWinner, setShowWinner] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [localWinner, setLocalWinner] = useState<any>(null);
+  const [localWinnerReason, setLocalWinnerReason] = useState<string | null>(null);
   const { width, height } = useWindowSize();
+
+  // Debug logging
+  useEffect(() => {
+    if (showWinner) {
+      console.log('Winner data:', { winner: localWinner, winnerReason: localWinnerReason });
+    }
+  }, [showWinner, localWinner, localWinnerReason]);
 
   const selectWinner = async () => {
     if (userInputs.length === 0) return;
@@ -29,6 +38,13 @@ export default function Presentation6() {
         throw new Error(data.error || 'Failed to select winner');
       }
 
+      const data = await response.json();
+      console.log('Winner API response:', data);
+
+      // Store the winner data locally
+      setLocalWinner(data.winner);
+      setLocalWinnerReason(data.reason);
+
       // Wait a bit before showing winner for dramatic effect
       setTimeout(() => {
         setIsThinking(false);
@@ -43,7 +59,7 @@ export default function Presentation6() {
 
   return (
     <main className="min-h-screen flex items-center justify-center p-8">
-      {showWinner && winner && <Confetti width={width} height={height} recycle={true} />}
+      {showWinner && localWinner && <Confetti width={width} height={height} recycle={true} />}
       <NavigationButtons backHref="/presentation/5" />
 
       <div className="text-center max-w-3xl mx-auto">
@@ -85,10 +101,16 @@ export default function Presentation6() {
           </button>
         )}
 
-        {!error && showWinner && winner && (
-          <div className="p-12 rounded-2xl border-4 bg-bb-yellow/20 border-bb-yellow scale-110 shadow-2xl transition-all duration-300">
-            <h2 className="text-4xl font-bold mb-6">{winner.name}</h2>
-            <p className="text-2xl text-gray-700">{winner.idea}</p>
+        {!error && showWinner && localWinner && (
+          <div className="p-12 rounded-2xl border-4 bg-bb-yellow/20 border-bb-yellow shadow-2xl transition-all duration-300">
+            <h2 className="text-5xl font-bold mb-6 text-bb-blue">{localWinner.name}</h2>
+            <p className="text-xl text-gray-600 mb-6 italic">&quot;{localWinner.idea}&quot;</p>
+            {localWinnerReason && (
+              <div className="mt-8 pt-8 border-t-2 border-bb-yellow">
+                <p className="text-lg font-semibold text-bb-pink mb-2">Why they won:</p>
+                <p className="text-xl text-gray-800">{localWinnerReason}</p>
+              </div>
+            )}
           </div>
         )}
 

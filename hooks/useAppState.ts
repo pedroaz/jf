@@ -12,6 +12,7 @@ export function useAppState() {
     visibleCards: [],
     userInputs: [],
     winner: null,
+    winnerReason: null,
     cards: [],
   });
 
@@ -20,6 +21,11 @@ export function useAppState() {
       try {
         const response = await fetch('/api/state');
         const data = await response.json();
+        console.log('useAppState received data:', {
+          hasWinner: !!data.winner,
+          hasWinnerReason: !!data.winnerReason,
+          winnerReason: data.winnerReason
+        });
         setState(data);
       } catch (error) {
         console.error('Failed to fetch state:', error);
